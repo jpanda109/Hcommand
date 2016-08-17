@@ -1,0 +1,32 @@
+
+./Setup.hs,15
+main main1,2
+
+./test/Spec.hs,30
+main main0,1
+main main1,2
+
+./src/Hcommand.hs,658
+module HcommandHcommand0,1
+head' head'14,15
+head' head'15,16
+basic basic18,19
+basic basic19,20
+data Context Context21,22
+data Context = Context Context21,22
+data Context = Context { ctxArgs ctxArgs21,22
+type Args Args24,25
+data ArgVal ArgVal26,27
+data ArgVal = ArgInteger ArgInteger26,27
+            | ArgString ArgString27,28
+            | ArgBool ArgBool28,29
+parseArgs parseArgs30,31
+parseArgs parseArgs31,32
+getInt getInt36,37
+getInt getInt37,38
+getBool getBool42,43
+getBool getBool43,44
+getString getString48,49
+getString getString49,50
+getFromContext getFromContext54,55
+getFromContext getFromContext55,56
