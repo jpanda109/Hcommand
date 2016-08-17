@@ -1,50 +1,45 @@
 module Hcommand
-  ( Context
-  , parseArgs
-  , getInt
-  , getBool
-  , getString
+  ( parseArgs
   ) where
 
 import Data.Map as Map
 import Data.List as List
 import Data.Maybe as Maybe
 
-data Context = Context { ctxArgs :: Args
-                       }
+data ArgSpec = FlagSpec | NoArgSpec | AnonSpec
+data Flag = Arg String | NoArg
 
-type Args = Map.Map String ArgVal
+type ArgSpecMap = Map.Map String ArgSpec
 
-data ArgVal = ArgInteger Integer
-            | ArgString String
-            | ArgBool Bool
+data Context = Context { anons :: [String]
+                       , flags :: Map.Map String Flag}
 
-parseArgs :: [String] -> Context
-parseArgs tokens =
-  let args = Map.fromList (List.map (\s -> (s, ArgString s)) tokens)
+parseArgs :: ArgSpecMap -> [String] -> Context
+parseArgs = parseArgs' Context {anons=[], flags=Map.empty}
+
+parseArgs' :: Context -> ArgSpecMap -> [String] -> Context
+parseArgs' ctx _ [] = ctx
+parseArgs' ctx _ [arg] =
+  let newAnons = arg : anons ctx
   in
-    Context {ctxArgs=args}
-
-getInt :: String -> Context -> Integer
-getInt arg ctx =
-  getFromContext (\v -> case v of
-                          ArgInteger s -> Just s
-                          _ -> Nothing) arg ctx
-
-getBool :: String -> Context -> Bool
-getBool arg ctx =
-  getFromContext (\v -> case v of
-                          ArgBool s -> Just s
-                          _ -> Nothing) arg ctx
-
-getString :: String -> Context -> String
-getString arg ctx =
-  getFromContext (\v -> case v of
-                          ArgString s -> Just s
-                          _ -> Nothing) arg ctx
-
-getFromContext :: (ArgVal -> Maybe v) -> String -> Context -> v
-getFromContext f arg ctx =
-  Maybe.fromMaybe (error "parsing error") $
-  Map.lookup arg (ctxArgs ctx)
-  >>= f
+    Context {anons=newAnons, flags=flags ctx}
+parseArgs' ctx specs (arg1 : arg2 : rest) =
+  if "-" `isPrefixOf` arg1
+  then
+    let spec = Maybe.fromMaybe (error "invalid flag") (Map.lookup arg1 specs)
+    in
+      case spec of
+        FlagSpec ->
+          let newFlags = Map.insert arg1 (Arg arg2) (flags ctx)
+              newCtx = Context {anons=anons ctx, flags=newFlags}
+          in parseArgs' newCtx specs rest
+        NoArgSpec ->
+          let newFlags = Map.insert arg1 NoArg (flags ctx)
+              newCtx = Context {anons=anons ctx, flags=newFlags}
+          in
+            parseArgs' newCtx specs (arg2 : rest)
+        AnonSpec -> error "invalid flag"
+  else
+    let newAnons = arg1 : anons ctx
+    in
+      Context {anons=newAnons, flags=flags ctx}
