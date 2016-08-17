@@ -1,23 +1,14 @@
 module Hcommand
-  ( basic
-  , Context
+  ( Context
   , parseArgs
   , getInt
   , getBool
   , getString
-  , head'
   ) where
 
 import Data.Map as Map
 import Data.List as List
 import Data.Maybe as Maybe
-
-head' :: [a] -> a
-head' [] = error "yo"
-head' (x:_) = x
-
-basic :: IO ()
-basic = putStrLn "hello"
 
 data Context = Context { ctxArgs :: Args
                        }

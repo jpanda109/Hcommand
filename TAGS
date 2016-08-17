@@ -6,27 +6,23 @@ main main1,2
 main main0,1
 main main1,2
 
-./src/Hcommand.hs,658
+./src/Hcommand.hs,582
 module HcommandHcommand0,1
-head' head'14,15
-head' head'15,16
-basic basic18,19
-basic basic19,20
-data Context Context21,22
-data Context = Context Context21,22
-data Context = Context { ctxArgs ctxArgs21,22
-type Args Args24,25
-data ArgVal ArgVal26,27
-data ArgVal = ArgInteger ArgInteger26,27
-            | ArgString ArgString27,28
-            | ArgBool ArgBool28,29
-parseArgs parseArgs30,31
-parseArgs parseArgs31,32
-getInt getInt36,37
-getInt getInt37,38
-getBool getBool42,43
-getBool getBool43,44
-getString getString48,49
-getString getString49,50
-getFromContext getFromContext54,55
-getFromContext getFromContext55,56
+data Context Context12,13
+data Context = Context Context12,13
+data Context = Context { ctxArgs ctxArgs12,13
+type Args Args15,16
+data ArgVal ArgVal17,18
+data ArgVal = ArgInteger ArgInteger17,18
+            | ArgString ArgString18,19
+            | ArgBool ArgBool19,20
+parseArgs parseArgs21,22
+parseArgs parseArgs22,23
+getInt getInt27,28
+getInt getInt28,29
+getBool getBool33,34
+getBool getBool34,35
+getString getString39,40
+getString getString40,41
+getFromContext getFromContext45,46
+getFromContext getFromContext46,47
