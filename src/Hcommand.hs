@@ -1,45 +1,78 @@
+{-# LANGUAGE FlexibleInstances #-}
 module Hcommand
   ( parseArgs
+  , Context
+  , ReadArg (readArg)
+  , getArg
+  , run
   ) where
 
-import Data.Map as Map
-import Data.List as List
-import Data.Maybe as Maybe
+import qualified Data.Map as Map
+import qualified Data.List as List
+import qualified Data.Maybe as Maybe
 
-data ArgSpec = FlagSpec | NoArgSpec | AnonSpec
+import qualified Spec as Spec
+
 data Flag = Arg String | NoArg
 
-type ArgSpecMap = Map.Map String ArgSpec
+data Context = Context { ctx_spec :: Spec.Spec
+                       , ctx_anons :: [String]
+                       , ctx_flags :: Map.Map String Flag
+                       }
 
-data Context = Context { anons :: [String]
-                       , flags :: Map.Map String Flag}
+class ReadArg a where
+  readArg :: String -> a
 
-parseArgs :: ArgSpecMap -> [String] -> Context
-parseArgs = parseArgs' Context {anons=[], flags=Map.empty}
+instance ReadArg String where
+  readArg s = read $ show s :: String
 
-parseArgs' :: Context -> ArgSpecMap -> [String] -> Context
-parseArgs' ctx _ [] = ctx
-parseArgs' ctx _ [arg] =
-  let newAnons = arg : anons ctx
+run :: Spec.Spec -> [String] -> (Context -> IO ()) -> IO ()
+run spec args action =
+  let ctx = parseArgs spec args
   in
-    Context {anons=newAnons, flags=flags ctx}
-parseArgs' ctx specs (arg1 : arg2 : rest) =
-  if "-" `isPrefixOf` arg1
+    action ctx
+
+parseArgs :: Spec.Spec -> [String] -> Context
+parseArgs specs = parseArgs' Context {ctx_spec=specs, ctx_anons=[], ctx_flags=Map.empty}
+
+parseArgs' :: Context -> [String] -> Context
+parseArgs' ctx [] = ctx
+parseArgs' ctx [arg] =
+  let newAnons = arg : ctx_anons ctx
+  in
+    ctx {ctx_anons=newAnons}
+parseArgs' ctx (arg1 : arg2 : rest) =
+  if "-" `List.isPrefixOf` arg1
   then
-    let spec = Maybe.fromMaybe (error "invalid flag") (Map.lookup arg1 specs)
+    let spec = Maybe.fromMaybe (error "invalid flag") (Map.lookup arg1 (Spec.flags $ ctx_spec ctx))
     in
       case spec of
-        FlagSpec ->
-          let newFlags = Map.insert arg1 (Arg arg2) (flags ctx)
-              newCtx = Context {anons=anons ctx, flags=newFlags}
-          in parseArgs' newCtx specs rest
-        NoArgSpec ->
-          let newFlags = Map.insert arg1 NoArg (flags ctx)
-              newCtx = Context {anons=anons ctx, flags=newFlags}
+        Spec.Flag ->
+          let newFlags = Map.insert arg1 (Arg arg2) (ctx_flags ctx)
+              newCtx = ctx {ctx_flags=newFlags}
+          in parseArgs' newCtx rest
+        Spec.NoArg ->
+          let newFlags = Map.insert arg1 NoArg (ctx_flags ctx)
+              newCtx = ctx {ctx_flags=newFlags}
           in
-            parseArgs' newCtx specs (arg2 : rest)
-        AnonSpec -> error "invalid flag"
+            parseArgs' newCtx (arg2 : rest)
+        Spec.Anon -> error "invalid flag"
   else
-    let newAnons = arg1 : anons ctx
+    let newAnons = arg1 : ctx_anons ctx
     in
-      Context {anons=newAnons, flags=flags ctx}
+      ctx {ctx_anons=newAnons}
+
+
+getArg :: (ReadArg r) => String -> Context -> r
+getArg arg ctx =
+  if "-" `List.isPrefixOf` arg
+  then
+    let val = Maybe.fromMaybe (error "No flag with this name") (Map.lookup arg (ctx_flags ctx))
+    in
+      case val of
+        NoArg -> readArg $ show True
+        Arg s -> readArg s
+  else
+    let i = Maybe.fromMaybe (error "No flag with this name") (Spec.anonIndex arg $ ctx_spec ctx)
+    in
+      readArg $ ((Spec.anons $ ctx_spec ctx) !! i)

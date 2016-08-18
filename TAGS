@@ -6,21 +6,39 @@ main main1,2
 main main0,1
 main main1,2
 
-./src/Hcommand.hs,593
+./src/Spec.hs,360
+data Arg Arg12,13
+data Arg = Flag| Flag|12,13
+data Arg = Flag| NoArg | AnonAnon12,13
+data Spec Spec14,15
+data Spec = Spec Spec14,15
+data Spec = Spec { anons anons14,15
+                 , flags flags15,16
+empty empty18,19
+empty empty19,20
+fromList fromList21,22
+fromList fromList22,23
+anonIndex anonIndex32,33
+anonIndex anonIndex33,34
+
+./src/Hcommand.hs,608
 module HcommandHcommand0,1
-data ArgSpec ArgSpec8,9
-data ArgSpec = FlagSpec FlagSpec8,9
-data ArgSpec = FlagSpec | NoArgSpec NoArgSpec8,9
-data ArgSpec = FlagSpec | NoArgSpec | AnonSpecAnonSpec8,9
-data Flag Flag9,10
-data Flag = Arg Arg9,10
-data Flag = Arg String | NoArgNoArg9,10
-type ArgSpecMap ArgSpecMap11,12
-data Context Context13,14
-data Context = Context Context13,14
-data Context = Context { anons anons13,14
-                       , flags flags14,15
-parseArgs parseArgs16,17
-parseArgs parseArgs17,18
-parseArgs' parseArgs'19,20
-parseArgs' parseArgs'20,21
+data Flag Flag13,14
+data Flag = Arg Arg13,14
+data Flag = Arg String | NoArgNoArg13,14
+data Context Context15,16
+data Context = Context Context15,16
+data Context = Context { ctx_spec ctx_spec15,16
+                       , ctx_anons ctx_anons16,17
+                       , ctx_flags ctx_flags17,18
+class ReadArg ReadArg20,21
+class ReadArg ReadArg20,21
+  readArg readArg21,22
+run run23,24
+run run24,25
+parseArgs parseArgs29,30
+parseArgs parseArgs30,31
+parseArgs' parseArgs'32,33
+parseArgs' parseArgs'33,34
+getArg getArg60,61
+getArg getArg61,62
