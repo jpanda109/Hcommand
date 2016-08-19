@@ -1,21 +1,35 @@
-What I'd ideally like this to look like  
-doesn't necessarily have to be bind operator, but any monadic looking operator could probably work.
+What I'd ideally like this to look like__
+(essentially same as ocaml's Core.Command)
 
 ```
-run :: [Command] -> [String] -> IO ()
-fromList :: [String] -> Context
-group :: [(String, Command)] -> Command
-flag :: String -> Context -> (Read v => Context -> v -> IO ()) -> Command
 
-let f =
-  flag "-a" required ctx >>= (ctx, a :: String) ->
-  flag "-b" required ctx >>= (ctx, b :: String) -> 
-  flag "-c" required ctx >>= (ctx, c :: Int) ->
-  putStrLn a >>= putStrLn b >>= putStrLn $ show c
-in
-let commandGroup =
-  group  [ ("c1", f) ]
-in
-run commandGroup (fromList prog.Args)
+let main =
+  let command =
+    basic
+      "summary"
+      (empty
+       +> flag "-flag" ["-f"] (required string) "documentation"
+       +> anon "ANON" (string)
+       )
+      \someFlag someAnon () ->
+      putStrLn someFlag >>= putStrLn someAnon
+  in
+  run command
+```
 
+What I'll likely settle with
+```
+data Args = SomeFlag | SomeAnon
+let main =
+  let command =
+        basic
+          "summary"
+          [ flag SomeFlag "-flag" ["-f"] required "documentation"
+          , anon SomeAnon "ANON"]
+      ctx = run command
+      someFlag = getArg ctx SomeFlag :: String
+      someAnon = getArg ctx SomeAnon :: String
+  in
+  putStrLn someFlag >>= putStrLn someAnon
+  
 ```
